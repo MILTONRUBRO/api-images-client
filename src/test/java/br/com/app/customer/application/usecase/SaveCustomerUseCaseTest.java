@@ -11,6 +11,7 @@ import org.mockito.MockitoAnnotations;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import br.com.app.customer.domain.model.Customer;
 import br.com.app.customer.domain.model.CustomerRequest;
+import br.com.app.customer.domain.model.CustomerResponse;
 import br.com.app.customer.infrastructure.persistence.CustomerJpaRepository;
 import java.util.Optional;
 
@@ -39,7 +40,7 @@ class SaveCustomerUseCaseTest {
 		when(passwordEncoder.encode(request.getSenha())).thenReturn("encodedPassword");
 		when(customerJpaRepository.save(any(Customer.class))).thenReturn(customer);
 
-		Customer savedCustomer = saveCustomerUseCase.save(request);
+		CustomerResponse savedCustomer = saveCustomerUseCase.save(request);
 
 		assertNotNull(savedCustomer);
 		verify(customerJpaRepository, times(1)).save(any(Customer.class));

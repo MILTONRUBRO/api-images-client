@@ -1,17 +1,22 @@
 package br.com.app.customer.infrastructure.controller;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
-import org.junit.jupiter.api.Test;
-import static org.mockito.Mockito.*;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+
 import br.com.app.customer.application.usecase.SaveCustomerUseCase;
-import br.com.app.customer.domain.model.Customer;
+import br.com.app.customer.domain.model.AuthResponse;
 import br.com.app.customer.domain.model.CustomerRequest;
+import br.com.app.customer.domain.model.CustomerResponse;
 
 class CustomerControllerTest {
 
@@ -29,24 +34,37 @@ class CustomerControllerTest {
 	@Test
 	void testSave() {
 		CustomerRequest request = new CustomerRequest();
-		Customer customer = new Customer();
-		when(saveCustomerUseCase.save(request)).thenReturn(customer);
+		CustomerResponse customerResponse = new CustomerResponse();
+		when(saveCustomerUseCase.save(request)).thenReturn(customerResponse);
 
-		ResponseEntity<Customer> response = customerController.save(request);
+		ResponseEntity<CustomerResponse> response = customerController.save(request);
 
-		assertEquals(ResponseEntity.ok(customer), response);
+		assertEquals(ResponseEntity.ok(customerResponse), response);
 		verify(saveCustomerUseCase, times(1)).save(request);
+	}
+	@Test
+	void testLoginSuccess() {
+		CustomerRequest request = new CustomerRequest();
+		String token = "validToken";
+		when(saveCustomerUseCase.generateToken(request)).thenReturn(token);
+
+		ResponseEntity<?> response = customerController.login(request);
+
+		assertEquals(ResponseEntity.ok(new AuthResponse(token)), response);
+		verify(saveCustomerUseCase, times(1)).generateToken(request);
 	}
 
 	@Test
-	void testVerificarSenha() {
+	void testLoginUnauthorized() {
 		CustomerRequest request = new CustomerRequest();
-		when(saveCustomerUseCase.verifyPassword(request)).thenReturn(true);
+		when(saveCustomerUseCase.generateToken(request)).thenReturn("");
 
-		boolean result = customerController.verificarSenha(request);
+		ResponseEntity<?> response = customerController.login(request);
 
-		assertTrue(result);
-		verify(saveCustomerUseCase, times(1)).verifyPassword(request);
+		assertEquals(HttpStatus.UNAUTHORIZED, response.getStatusCode());
+		verify(saveCustomerUseCase, times(1)).generateToken(request);
 	}
+
+
 
 }
